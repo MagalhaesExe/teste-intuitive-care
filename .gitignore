@@ -1,0 +1,12 @@
+# Ambientes virtuais
+venv/
+.env
+
+# Dados (Não subir arquivos brutos ou processados pesados)
+data/raw/
+data/processed/
+
+# Logs e Cache
+*.log
+__pycache__/
+.DS_Store
