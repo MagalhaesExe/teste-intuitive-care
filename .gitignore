@@ -2,11 +2,13 @@
 venv/
 .env
 
-# Dados (Não subir arquivos brutos ou processados pesados)
-data/raw/
-data/processed/
+# Dados 
+data/
+*.zip
+*.csv
 
 # Logs e Cache
 *.log
 __pycache__/
 .DS_Store
+.ipynb_checkpoints/

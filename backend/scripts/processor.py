@@ -83,8 +83,8 @@ def process_files():
                             except:
                                 return 0.0
 
-                        res['Valor Despesas'] = filtered['VL_SALDO_FINAL'].apply(limpar_valor)
-                        res = res[res['Valor Despesas'] > 0]
+                        res['ValorDespesas'] = filtered['VL_SALDO_FINAL'].apply(limpar_valor)
+                        res = res[res['ValorDespesas'] > 0]
                         all_data.append(res)
                         
         except Exception as e:
@@ -95,7 +95,7 @@ def process_files():
         final_df = pd.concat(all_data, ignore_index=True)
         
         final_df = final_df.groupby(['CNPJ', 'RazaoSocial', 'Trimestre', 'Ano'], as_index=False).agg({
-            'Valor Despesas': 'sum'
+            'ValorDespesas': 'sum'
         })
         
         final_df.to_csv(OUTPUT_FILE, index=False, encoding='utf-8')
