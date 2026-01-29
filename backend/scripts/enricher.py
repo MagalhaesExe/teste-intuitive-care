@@ -47,10 +47,9 @@ def enrich_data():
     if not os.path.exists(CADASTRO_LOCAL):
         if not buscar_e_baixar_csv(): return
 
-    # 1. Carregar dados financeiros
     df_fin = pd.read_csv("data/processed/consolidado_despesas.csv", dtype={'CNPJ': str})
     
-    # 2. Carregar dados cadastrais
+    # Tenta carregar os dados cadastrais tratando variações de encoding e delimitadores
     try:
         df_cad = pd.read_csv(CADASTRO_LOCAL, sep=';', encoding='latin-1', dtype={'CNPJ': str})
         if len(df_cad.columns) < 2:
@@ -61,8 +60,9 @@ def enrich_data():
 
     logger.info(f"Colunas encontradas no cadastro: {df_cad.columns.tolist()}")
 
-    # --- MAPEAMENTO INTELIGENTE DE COLUNAS ---
-    # Note que renomeamos o CNPJ do cadastro para 'CNPJ_CADASTRO' para evitar conflito no merge
+    # Mapeamento dinâmico de colunas:
+    # Implementa lógica de 'aliases' para garantir que o pipeline não quebre 
+    # caso a ANS altere a nomenclatura das colunas (ex: 'UF' para 'Estado')
     mapeamento = {}
     colunas_procuradas = {
         'CNPJ_CADASTRO': ['CNPJ', 'cnpj'], 
@@ -84,24 +84,25 @@ def enrich_data():
     df_cad = df_cad[list(mapeamento.keys())].rename(columns=mapeamento)
     df_cad = df_cad.drop_duplicates(subset=['RegistroANS'], keep='first')
     
-    # --- PADRONIZAÇÃO E JOIN ---
     logger.info("Padronizando tipos e realizando Join...")
     df_fin['CNPJ'] = df_fin['CNPJ'].astype(str).str.strip()
     df_cad['RegistroANS'] = df_cad['RegistroANS'].astype(str).str.strip()
 
+    # Enriquecimento:
+    # Realiza o 'Left Join' para agregar informações geográficas e de modalidade 
+    # às despesas financeiras, utilizando o Registro ANS como chave primária de ligação.
     df_final = pd.merge(
         df_fin, 
         df_cad, 
-        left_on='CNPJ',      # Registro ANS que está no arquivo de despesas
+        left_on='CNPJ',      
         right_on='RegistroANS', 
         how='left'
     )
 
-    # --- PÓS-PROCESSAMENTO ---
-    # Criamos a coluna final de CNPJ usando o valor real do cadastro
+    # Reconciliação de Identificadores: Preenche CNPJs ausentes no cadastro com dados da origem
     df_final['CNPJ_Final'] = df_final['CNPJ_CADASTRO'].fillna(df_final['CNPJ'])
-    
-    # Selecionamos as 8 colunas finais conforme o desafio
+
+    # Definição do layout final das 8 colunas exigidas para a carga no banco de dados
     colunas_finais = [
         'CNPJ_Final', 'RazaoSocial', 'Trimestre', 'Ano', 
         'ValorDespesas', 'RegistroANS', 'Modalidade', 'UF'
@@ -110,14 +111,17 @@ def enrich_data():
     df_saida = df_final[colunas_finais].copy()
     df_saida.columns = ['CNPJ', 'RazaoSocial', 'Trimestre', 'Ano', 'ValorDespesas', 'RegistroANS', 'Modalidade', 'UF']
 
-    # Preenchimento de nulos para garantir qualidade
+    # Tratamento de consistência:
+    # Garante que campos obrigatórios não fiquem vazios após o merge,
+    # facilitando futuras agregações e filtragens no banco de dados
     df_saida['Modalidade'] = df_saida['Modalidade'].fillna('NÃO ENCONTRADO')
-    df_saida['UF'] = df_saida['UF'].fillna('NI')
+    df_saida['UF'] = df_saida['UF'].fillna('NI') # NI = Não identificado
+
     # Se não achou RegistroANS no merge, usa o ID que veio no arquivo de despesas
     df_saida['RegistroANS'] = df_saida['RegistroANS'].fillna(df_saida['CNPJ']) 
 
     df_saida.to_csv("data/processed/consolidado_enriquecido.csv", index=False)
     logger.info("Sucesso! Arquivo 'consolidado_enriquecido.csv' gerado.")
-    
+
 if __name__ == "__main__":
     enrich_data()

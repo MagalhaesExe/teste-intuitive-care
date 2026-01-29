@@ -21,13 +21,18 @@ OUTPUT_FILE = os.path.join(OUTPUT_DIR, "consolidado_despesas.csv")
 
 def extrair_data_do_caminho(path):
     nome_arq = os.path.basename(path)
+
+    # Valores padrão (fallback) caso o padrão esperado não seja identificado
     ano = "2025"
     trimestre = "1"
     
+    # Regex para capturar anos no formato YYYY (20XX)
     match_ano = re.search(r"20\d{2}", nome_arq)
     if match_ano:
         ano = match_ano.group()
     
+    # Regex para capturar o trimestre no padrão 'NT' (ex: 1T, 2T, 3T, 4T)
+    # .upper() garante a captura independente da capitalização do nome do arquivo
     match_tri = re.search(r"(\d)T", nome_arq.upper())
     if match_tri:
         trimestre = match_tri.group(1)
@@ -35,6 +40,7 @@ def extrair_data_do_caminho(path):
     return ano, trimestre
 
 def process_files():
+    # Cria estrutura de diretórios para persistência da camada processada
     if not os.path.exists(OUTPUT_DIR):
         os.makedirs(OUTPUT_DIR)
         logger.info(f"Diretório de saída criado: {OUTPUT_DIR}")
@@ -51,12 +57,15 @@ def process_files():
         ano, trimestre = extrair_data_do_caminho(file_path)
         
         try:
-            # Processamento incremental (Trade-off técnico: Memória vs Performance)
+            # Estrátegia de processamento em lotes (chunking)
+            # Trade-off: Menor consumo de memória RAM sacrificando levemente o tempo de CPU
             chunks = pd.read_csv(file_path, sep=';', engine='python', encoding='latin-1', chunksize=100000, on_bad_lines='skip')
             
             for chunk in chunks:
+                # Normalização de cabeçalhos: remove caracteres especiais e padroniza para UPPERCASE
                 chunk.columns = [c.upper().strip().replace('"', '') for c in chunk.columns]
                 
+                # Filtragem: Isola apenas despesas relacionadas a Sinistros/Eventos Conhecidos
                 if 'DESCRICAO' in chunk.columns:
                     chunk['DESCRICAO'] = chunk['DESCRICAO'].astype(str).str.strip()
                     
@@ -72,9 +81,14 @@ def process_files():
                         res['Trimestre'] = trimestre
                         res['Ano'] = ano
                         
+
+                        # Normalizador financeiro: Trata inconsistências de separadores decimais 
+                        # (padrão PT-BR vs EN-US)
                         def limpar_valor(v):
                             v = str(v).replace('"', '').strip()
                             if not v or v == 'nan': return 0.0
+
+                            # Lógica para tratar formatos como '1.234,56' transformando em '1234.56'
                             if '.' in v and ',' in v:
                                 v = v.replace('.', '')
                             v = v.replace(',', '.')
@@ -84,6 +98,8 @@ def process_files():
                                 return 0.0
 
                         res['ValorDespesas'] = filtered['VL_SALDO_FINAL'].apply(limpar_valor)
+
+                        # Remove registros sem impacto financeiro para otimizar o armazenamento
                         res = res[res['ValorDespesas'] > 0]
                         all_data.append(res)
                         
@@ -92,8 +108,12 @@ def process_files():
 
     if all_data:
         logger.info("Consolidando dados filtrados...")
+
+        # Unificação dos dataframes processados individualmente
         final_df = pd.concat(all_data, ignore_index=True)
         
+        # Agregação: Consolida valores por operadora e período
+        # Reduz a cardinalidade dos dados antes da inserção no banco de dados
         final_df = final_df.groupby(['CNPJ', 'RazaoSocial', 'Trimestre', 'Ano'], as_index=False).agg({
             'ValorDespesas': 'sum'
         })

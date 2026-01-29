@@ -9,8 +9,8 @@ logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(levelname)s - %(message)s',
     handlers=[
-        logging.FileHandler("execucao.log"), # Salva em arquivo
-        logging.StreamHandler()              # Exibe no terminal
+        logging.FileHandler("execucao.log"),
+        logging.StreamHandler()              
     ]
 )
 logger = logging.getLogger(__name__)
@@ -28,6 +28,7 @@ def download_and_extract():
         response = requests.get(BASE_URL, timeout=15)
         soup = BeautifulSoup(response.text, 'html.parser')
         
+        # Filtra links que representam anos e ordena de forma decrescente para priorizar dados recentes
         links = [a['href'] for a in soup.find_all('a', href=True)]
         years = sorted([l for l in links if l.strip('/').isdigit()], reverse=True)
         
@@ -35,16 +36,19 @@ def download_and_extract():
 
         found_quarters = []
         for year in years:
+            # Estratégia de parada: busca apenas os trimestres mais recentes conforme limite definido
             if len(found_quarters) >= 1: break
             year_url = BASE_URL + year if BASE_URL.endswith('/') else BASE_URL + '/' + year
             logger.info(f"Acessando ano: {year_url}")
             
+            # Acessa a pasta do ano para buscar subpastas de trimestres
             res_year = requests.get(year_url, timeout=15)
             soup_year = BeautifulSoup(res_year.text, 'html.parser')
             
             q_links = [a['href'] for a in soup_year.find_all('a', href=True) if a['href'] not in ['../', './', '/']]
             q_links = sorted([q for q in q_links if q.endswith('/')], reverse=True)
             
+            # Coleta as URLs finais onde os arquivos ZIP residem
             for q in q_links:
                 if len(found_quarters) >= 3: break
                 q_full_url = year_url
@@ -66,6 +70,7 @@ def download_and_extract():
                 clean_zip_name = zip_name.strip('/').split('/')[-1]
                 path = os.path.join(DOWNLOAD_DIR, clean_zip_name)
                 
+                # Download via Stream para otimizar consumo de memória com arquivos grandes
                 logger.info(f"Baixando: {clean_zip_name}...")
                 r = requests.get(zip_url, stream=True)
                 if r.status_code == 200:
@@ -73,6 +78,7 @@ def download_and_extract():
                         for chunk in r.iter_content(chunk_size=8192):
                             f.write(chunk)
                     
+                    # Extração e limpeza imediata do arquivo ZIP para economizar espaço em disco
                     try:
                         with zipfile.ZipFile(path, 'r') as zip_ref:
                             folder_name = clean_zip_name.replace('.zip', '').replace('.ZIP', '')
