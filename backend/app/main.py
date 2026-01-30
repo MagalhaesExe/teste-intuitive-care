@@ -7,7 +7,7 @@ app = FastAPI(title="ANS Data API")
 # Configuração de CORS para permitir que o Frontend (Vue) acesse o Backend
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"], # Em produção, substitua pelo domínio do seu Vue
+    allow_origins=["*"],
     allow_methods=["*"],
     allow_headers=["*"],
 )
