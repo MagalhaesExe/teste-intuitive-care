@@ -23,9 +23,16 @@ def obter_estatisticas():
         top_5 = cur.fetchall()
 
         return {
-            "geral": geral,
-            "top_operadoras": top_5
+            "geral": {
+                "total": float(geral['total'] or 0),
+                "media": float(geral['media'] or 0)
+            },
+            "top_operadoras": [
+                {"razao_social": r['razao_social'], "total": float(r['total'])} 
+                for r in top_5
+            ]
         }
+    
     finally:
         cur.close()
         conn.close()
