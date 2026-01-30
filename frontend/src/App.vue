@@ -1,33 +1,47 @@
 <script setup>
-import { ref, onMounted, computed } from 'vue'
-import axios from 'axios'
+import { ref, onMounted } from 'vue'
 import UfChart from './components/UFChart.vue'
+import { useOperadoras } from './composables/useOperadoras' // Importando a lógica
 
-// --- ESTADO ---
-const viewMode = ref('list') // 'list' ou 'details'
-const selectedOperadora = ref(null) // Dados da operadora selecionada
-const operadoras = ref([])
-const metadata = ref({ total: 0, page: 1, limit: 10 })
-const ufData = ref({ labels: [], datasets: [] })
+// Usando o Composable (Extraindo o que precisamos)
+const { 
+  operadoras, 
+  metadata, 
+  loading, 
+  totalPages, 
+  selectedOperadora, 
+  fetchOperadoras, 
+  fetchDetalhes 
+} = useOperadoras()
+
+// Estado Local (Coisas que são só da tela, não da regra de negócio)
+const viewMode = ref('list')
 const searchQuery = ref('')
-const loading = ref(false)
+const ufData = ref({ labels: [], datasets: [] })
 
-// --- FUNÇÕES DE API ---
+// Funções de Interface (Ligam a tela à lógica)
+const handleSearch = () => fetchOperadoras(1, searchQuery.value)
 
-// 1. Busca Lista
-const fetchOperadoras = async (page = 1) => {
-  loading.value = true
-  try {
-    const res = await axios.get('http://127.0.0.1:8000/api/operadoras', {
-      params: { page, limit: 10, search: searchQuery.value }
-    })
-    operadoras.value = res.data.data
-    metadata.value = res.data.metadata
-  } catch (err) { console.error(err) } 
-  finally { loading.value = false }
+const nextPage = () => {
+  if (metadata.value.page < totalPages.value) fetchOperadoras(metadata.value.page + 1, searchQuery.value)
 }
 
-// 2. Busca Gráfico
+const prevPage = () => {
+  if (metadata.value.page > 1) fetchOperadoras(metadata.value.page - 1, searchQuery.value)
+}
+
+const openDetails = async (cnpj) => {
+  const success = await fetchDetalhes(cnpj)
+  if (success) viewMode.value = 'details'
+}
+
+const backToList = () => {
+  viewMode.value = 'list'
+  selectedOperadora.value = null
+}
+
+// Gráfico (Pode ficar aqui ou num useChart.js, vamos deixar aqui por simplicidade)
+import axios from 'axios' // Só para o gráfico
 const fetchUfStats = async () => {
   const res = await axios.get('http://127.0.0.1:8000/api/estatisticas/uf')
   if(res.data.length > 0) {
@@ -38,31 +52,6 @@ const fetchUfStats = async () => {
   }
 }
 
-// 3. Busca Detalhes (NOVO)
-const openDetails = async (cnpj) => {
-  loading.value = true
-  try {
-    const res = await axios.get(`http://127.0.0.1:8000/api/operadoras/${cnpj}/detalhes`)
-    selectedOperadora.value = res.data
-    viewMode.value = 'details' // Troca a tela
-  } catch (err) {
-    alert("Erro ao carregar detalhes")
-  } finally {
-    loading.value = false
-  }
-}
-
-const backToList = () => {
-  viewMode.value = 'list'
-  selectedOperadora.value = null
-}
-
-const handleSearch = () => fetchOperadoras(1)
-const nextPage = () => fetchOperadoras(metadata.value.page + 1)
-const prevPage = () => fetchOperadoras(metadata.value.page - 1)
-const totalPages = computed(() => Math.ceil(metadata.value.total / metadata.value.limit))
-
-// Formatação de Moeda
 const formatMoney = (val) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val)
 
 onMounted(() => {
