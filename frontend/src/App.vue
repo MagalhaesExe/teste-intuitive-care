@@ -1,9 +1,9 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import UfChart from './components/UFChart.vue'
-import { useOperadoras } from './composables/useOperadoras' // Importando a lógica
+import { useOperadoras } from './composables/useOperadoras'
 
-// Usando o Composable (Extraindo o que precisamos)
+// Usando o Composable
 const { 
   operadoras, 
   metadata, 
@@ -14,7 +14,7 @@ const {
   fetchDetalhes 
 } = useOperadoras()
 
-// Estado Local (Coisas que são só da tela, não da regra de negócio)
+// Estado Local
 const viewMode = ref('list')
 const searchQuery = ref('')
 const ufData = ref({ labels: [], datasets: [] })
@@ -41,7 +41,7 @@ const backToList = () => {
 }
 
 // Gráfico 
-import axios from 'axios' // Só para o gráfico
+import axios from 'axios'
 const fetchUfStats = async () => {
   const res = await axios.get('http://127.0.0.1:8000/api/estatisticas/uf')
   if(res.data.length > 0) {
