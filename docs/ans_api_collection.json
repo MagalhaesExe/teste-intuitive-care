@@ -1,0 +1,61 @@
+{
+    "info": {
+        "_postman_id": "ans-dashboard-fix",
+        "name": "ANS Dashboard",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "item": [
+        {
+            "name": "Listar Operadoras",
+            "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                    "raw": "http://localhost:8000/api/operadoras?page=1&limit=10",
+                    "protocol": "http",
+                    "host": ["localhost"],
+                    "port": "8000",
+                    "path": ["api/operadoras"],
+                    "query": [
+                        {"key": "page", "value": "1"},
+                        {"key": "limit", "value": "10"}
+                    ]
+                }
+            },
+            "response": []
+        },
+        {
+            "name": "Buscar Operadora",
+            "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                    "raw": "http://localhost:8000/api/operadoras?search=381144",
+                    "protocol": "http",
+                    "host": ["localhost"],
+                    "port": "8000",
+                    "path": ["api/operadoras"],
+                    "query": [
+                        {"key": "search", "value": "381144"}
+                    ]
+                }
+            },
+            "response": []
+        },
+        {
+            "name": "Detalhes (CNPJ)",
+            "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                    "raw": "http://localhost:8000/api/operadoras/2338268000163",
+                    "protocol": "http",
+                    "host": ["localhost"],
+                    "port": "8000",
+                    "path": ["api/operadoras", "1402285000150"]
+                }
+            },
+            "response": []
+        }
+    ]
+}
