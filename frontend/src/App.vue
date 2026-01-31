@@ -40,14 +40,22 @@ const backToList = () => {
   selectedOperadora.value = null
 }
 
-// Gráfico (Pode ficar aqui ou num useChart.js, vamos deixar aqui por simplicidade)
+// Gráfico 
 import axios from 'axios' // Só para o gráfico
 const fetchUfStats = async () => {
   const res = await axios.get('http://127.0.0.1:8000/api/estatisticas/uf')
   if(res.data.length > 0) {
     ufData.value = {
       labels: res.data.map(i => i.uf),
-      datasets: [{ label: 'Total', backgroundColor: '#3b82f6', data: res.data.map(i => i.total) }]
+      datasets: [
+        { 
+          label: 'Total', 
+          backgroundColor: '#3B82F6', 
+          hoverBackgroundColor: '#60A5FA', 
+          borderRadius: 6, 
+          barThickness: 24, 
+          borderSkipped: false, 
+          data: res.data.map(i => i.total) }]
     }
   }
 }
@@ -61,90 +69,176 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="min-h-screen bg-gray-100 p-8 font-sans">
-    <div class="max-w-6xl mx-auto">
+  <div class="min-h-screen w-full bg-gray-50 text-gray-900 dark:bg-gray-900 dark:text-gray-100">
+    
+    <div class="w-full h-full py-10 px-4">
       
-      <header class="mb-6">
-        <h1 class="text-3xl font-bold text-gray-800">Dashboard ANS</h1>
+      <header class="mb-8 text-center">
+        <h1 class="text-4xl font-extrabold text-blue-900 dark:text-blue-400 tracking-tight">Dashboard ANS</h1>
+        <p class="mt-2 text-lg text-gray-600 dark:text-gray-400">Visão geral e consulta de operadoras</p>
       </header>
 
-      <div v-if="viewMode === 'list'">
+      <div v-if="viewMode === 'list'" class="space-y-8">
         
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-          <div class="lg:col-span-2 bg-white p-4 rounded-lg shadow">
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+          <h2 class="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-4">
+            Distribuição por Estado
+          </h2>          
+          <div class="h-64 w-full">
              <UfChart v-if="ufData.labels.length" :chartData="ufData" />
           </div>
-          <div class="flex flex-col justify-center gap-4">
-             <input v-model="searchQuery" @keyup.enter="handleSearch" placeholder="Buscar operadora..." class="p-3 border rounded shadow-sm" />
-             <button @click="handleSearch" class="bg-blue-600 text-white p-3 rounded hover:bg-blue-700">Pesquisar</button>
+        </div>
+
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-10 flex flex-col md:flex-row gap-8 items-center justify-between">
+          <div class="w-full">
+             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Pesquisar Operadora</label>
+             <div class="relative">
+               <input 
+                 v-model="searchQuery" 
+                 @keyup.enter="handleSearch" 
+                 placeholder="Digite o CNPJ ou registro..." 
+                 class="w-full pl-4 pr-12 py-3 rounded-lg
+                  bg-white dark:bg-gray-900
+                  text-gray-900 dark:text-gray-100
+                  border border-gray-300 dark:border-gray-700
+                  focus:ring-2 focus:ring-blue-500 focus:border-blue-500
+                  outline-none transition-all" 
+               />
+               <button 
+                 @click="handleSearch"
+                 class="absolute right-2 top-2 bottom-2 bg-blue-600 text-white px-4 rounded-md hover:bg-blue-700 font-medium text-sm"
+               >
+                 Buscar
+               </button>
+             </div>
+          </div>
+          <div class="text-sm text-gray-500 dark:text-gray-400">
+            Total de registros: <span class="font-bold text-gray-900 dark:text-gray-100">{{ metadata.total }}</span>
           </div>
         </div>
 
-        <div class="bg-white rounded-lg shadow overflow-hidden">
-          <table class="min-w-full divide-y divide-gray-200">
-            <thead class="bg-gray-50">
-              <tr>
-                <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">Registro</th>
-                <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">Razão Social</th>
-                <th class="px-6 py-3 text-center text-xs font-bold text-gray-500 uppercase">Ação</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-gray-200">
-              <tr v-for="op in operadoras" :key="op.cnpj" class="hover:bg-gray-50">
-                <td class="px-6 py-4">{{ op.registro_ans }}</td>
-                <td class="px-6 py-4">{{ op.razao_social }}</td>
-                <td class="px-6 py-4 text-center">
-                  <button @click="openDetails(op.cnpj)" class="text-blue-600 hover:text-blue-900 font-bold text-sm">Ver Detalhes</button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-          <div class="p-4 flex justify-between bg-gray-50 border-t">
-             <button @click="prevPage" :disabled="metadata.page === 1" class="px-4 py-2 border rounded bg-white disabled:opacity-50">Anterior</button>
-             <span>Pág {{ metadata.page }} de {{ totalPages }}</span>
-             <button @click="nextPage" :disabled="metadata.page >= totalPages" class="px-4 py-2 border rounded bg-white disabled:opacity-50">Próximo</button>
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+          <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+              <thead class="bg-gray-50 dark:bg-gray-900">
+                <tr>
+                  <th class="px-6 py-4 text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Registro ANS</th>
+                  <th class="px-6 py-4 text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">CNPJ</th>
+                  <th class="px-6 py-4 text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Razão Social</th>
+                  <th class="px-6 py-4 text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Ações</th>
+                </tr>
+              </thead>
+              <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                <tr v-for="op in operadoras" :key="op.cnpj" class="hover:bg-blue-50 dark:hover:bg-gray-700 transition-colors duration-150">
+                  <td class="px-6 py-4 text-sm text-gray-900 dark:text-gray-100">
+                    {{ op.registro_ans }}
+                  </td>
+                  <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
+                    {{ op.cnpj }}
+                  </td>
+                  <td class="px-6 py-4 text-sm text-gray-700 dark:text-gray-300">
+                    {{ op.razao_social }}
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
+                    <button 
+                      @click="openDetails(op.cnpj)" 
+                      class="text-blue-600 dark:text-blue-400
+                        bg-blue-50 dark:bg-blue-900/30
+                        hover:bg-blue-100 dark:hover:bg-blue-900/50
+                        px-3 py-1 rounded-full transition-colors"
+                    >
+                      Ver Detalhes
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="bg-gray-50 dark:bg-gray-900 px-6 py-4 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between">
+            <button 
+              @click="prevPage" 
+              :disabled="metadata.page === 1" 
+              class="px-4 py-2 border rounded-md text-sm font-medium
+                bg-white dark:bg-gray-800
+                text-gray-700 dark:text-gray-300
+                border-gray-300 dark:border-gray-700
+                hover:bg-gray-50 dark:hover:bg-gray-700
+                disabled:opacity-50"
+            >
+              Anterior
+            </button>
+            <span class="text-sm text-gray-300">
+              Página <span class="font-bold">{{ metadata.page }}</span> de <span class="font-bold">{{ totalPages }}</span>
+            </span>
+            <button 
+              @click="nextPage" 
+              :disabled="metadata.page >= totalPages" 
+              class="px-4 py-2 border rounded-md text-sm font-medium
+                bg-white dark:bg-gray-800
+                text-gray-700 dark:text-gray-300
+                border-gray-300 dark:border-gray-700
+                hover:bg-gray-50 dark:hover:bg-gray-700
+                disabled:opacity-50"
+            >
+              Próximo
+            </button>
           </div>
         </div>
+
       </div>
 
-      <div v-else class="bg-white rounded-lg shadow p-8 animate-fade-in">
-        <button @click="backToList" class="mb-6 flex items-center text-gray-600 hover:text-blue-600">
-          ← Voltar para a lista
-        </button>
-
-        <div v-if="selectedOperadora">
-          <div class="border-b pb-4 mb-6">
-            <h2 class="text-2xl font-bold text-gray-800">{{ selectedOperadora.info.razao_social }}</h2>
-            <div class="flex gap-4 mt-2 text-gray-600">
-              <span>CNPJ: {{ selectedOperadora.info.cnpj }}</span>
-              <span>•</span>
-              <span>Registro ANS: {{ selectedOperadora.info.registro_ans }}</span>
-            </div>
+      <div v-else class="max-w-4xl mx-auto
+         bg-white dark:bg-gray-800
+         rounded-xl shadow-lg
+         border border-gray-200 dark:border-gray-700
+         overflow-hidden animate-fade-in-up"
+        >
+        <div class="bg-blue-600 dark:bg-blue-700 px-8 py-6">
+          <button @click="backToList" class="text-white hover:text-blue-100 flex items-center mb-4 transition-colors">
+            <span class="mr-2 text-xl">←</span> Voltar para lista
+          </button>
+          <h2 class="text-2xl font-bold text-white mb-1" v-if="selectedOperadora">{{ selectedOperadora.info.razao_social }}</h2>
+          <div class="flex gap-4 text-blue-100 text-sm" v-if="selectedOperadora">
+             <span>CNPJ: {{ selectedOperadora.info.cnpj }}</span>
+             <span>|</span>
+             <span>Registro: {{ selectedOperadora.info.registro_ans }}</span>
           </div>
+        </div>
 
-          <h3 class="text-lg font-bold mb-4 text-gray-700">Histórico de Despesas Trimestrais</h3>
+        <div class="p-8">
+          <h3 class="text-lg font-bold
+             text-gray-800 dark:text-gray-100
+             mb-6 border-b
+             border-gray-200 dark:border-gray-700
+             pb-2"
+            >
+              Histórico Financeiro
+            </h3>
           
-          <table class="min-w-full border rounded-lg overflow-hidden">
-            <thead class="bg-gray-100">
-              <tr>
-                <th class="px-4 py-3 text-left font-medium">Ano</th>
-                <th class="px-4 py-3 text-left font-medium">Trimestre</th>
-                <th class="px-4 py-3 text-right font-medium">Valor Despesa</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="(hist, index) in selectedOperadora.historico" :key="index" class="border-t hover:bg-gray-50">
-                <td class="px-4 py-3">{{ hist.ano }}</td>
-                <td class="px-4 py-3">{{ hist.trimestre }}º Trimestre</td>
-                <td class="px-4 py-3 text-right font-mono text-blue-700 font-bold">
-                  {{ formatMoney(hist.valor_despesa) }}
-                </td>
-              </tr>
-              <tr v-if="selectedOperadora.historico.length === 0">
-                <td colspan="3" class="p-4 text-center text-gray-500">Nenhum registro de despesa encontrado.</td>
-              </tr>
-            </tbody>
-          </table>
+          <div class="overflow-hidden border rounded-lg border-gray-200 dark:border-gray-700" v-if="selectedOperadora">
+            <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+              <thead class="bg-gray-50 dark:bg-gray-900">
+                <tr>
+                  <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 dark:text-gray-400 uppercase">Ano</th>
+                  <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 dark:text-gray-400 uppercase">Período</th>
+                  <th class="px-6 py-3 text-right text-xs font-bold text-gray-500 dark:text-gray-400 uppercase">Despesa Assistencial</th>
+                </tr>
+              </thead>
+              <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                <tr v-for="(hist, index) in selectedOperadora.historico" :key="index" class="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                  <td class="px-6 py-4 text-sm text-gray-900 dark:text-gray-100">{{ hist.ano }}</td>
+                  <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">{{ hist.trimestre }}º Trimestre</td>
+                  <td class="px-6 py-4 text-sm text-right font-mono font-bold text-blue-700 dark:text-gray-400">
+                    {{ formatMoney(hist.valor_despesa) }}
+                  </td>
+                </tr>
+                <tr v-if="!selectedOperadora.historico.length">
+                  <td colspan="3" class="px-6 py-8 text-center text-gray-500 dark:text-gray-400">Nenhum dado financeiro disponível.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
 

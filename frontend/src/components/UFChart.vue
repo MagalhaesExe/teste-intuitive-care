@@ -10,19 +10,55 @@ const chartOptions = {
   responsive: true,
   maintainAspectRatio: false,
   plugins: {
-    legend: { display: false },
-    title: { display: true, text: 'Despesas por UF' },
+    legend: {
+      display: false
+    },
+    title: {
+      display: true,
+      text: 'Despesas por UF',
+      color: '#E5E7EB',
+      font: {
+        size: 14,
+        weight: 'bold'
+      }
+    },
     tooltip: {
+      backgroundColor: '#111827',
+      titleColor: '#E5E7EB',
+      bodyColor: '#E5E7EB',
+      borderColor: '#374151',
+      borderWidth: 1,
       callbacks: {
-        label: function(context) {
-          let label = context.dataset.label || '';
-          if (label) {
-            label += ': ';
-          }
-          // Formata para Moeda Brasileira (R$)
-          label += new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(context.raw);
-          return label;
+        label(context) {
+          return new Intl.NumberFormat('pt-BR', {
+            style: 'currency',
+            currency: 'BRL'
+          }).format(context.raw)
         }
+      }
+    }
+  },
+  scales: {
+    x: {
+      ticks: {
+        color: '#9CA3AF'
+      },
+      grid: {
+        color: '#1F2937'
+      }
+    },
+    y: {
+      ticks: {
+        color: '#9CA3AF',
+        callback(value) {
+          return new Intl.NumberFormat('pt-BR', {
+            notation: 'compact',
+            compactDisplay: 'short'
+          }).format(value)
+        }
+      },
+      grid: {
+        color: '#1F2937'
       }
     }
   }
@@ -30,7 +66,7 @@ const chartOptions = {
 </script>
 
 <template>
-  <div class="relative w-full h-80">
+  <div class="relative w-full h-64">
     <Bar :data="props.chartData" :options="chartOptions" />
   </div>
 </template>
