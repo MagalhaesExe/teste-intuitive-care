@@ -1,61 +1,185 @@
 {
-    "info": {
-        "_postman_id": "ans-dashboard-fix",
-        "name": "ANS Dashboard",
-        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
-    },
-    "item": [
-        {
-            "name": "Listar Operadoras",
-            "request": {
-                "method": "GET",
-                "header": [],
-                "url": {
-                    "raw": "http://localhost:8000/api/operadoras?page=1&limit=10",
-                    "protocol": "http",
-                    "host": ["localhost"],
-                    "port": "8000",
-                    "path": ["api/operadoras"],
-                    "query": [
-                        {"key": "page", "value": "1"},
-                        {"key": "limit", "value": "10"}
-                    ]
-                }
-            },
-            "response": []
-        },
-        {
-            "name": "Buscar Operadora",
-            "request": {
-                "method": "GET",
-                "header": [],
-                "url": {
-                    "raw": "http://localhost:8000/api/operadoras?search=381144",
-                    "protocol": "http",
-                    "host": ["localhost"],
-                    "port": "8000",
-                    "path": ["api/operadoras"],
-                    "query": [
-                        {"key": "search", "value": "381144"}
-                    ]
-                }
-            },
-            "response": []
-        },
-        {
-            "name": "Detalhes (CNPJ)",
-            "request": {
-                "method": "GET",
-                "header": [],
-                "url": {
-                    "raw": "http://localhost:8000/api/operadoras/2338268000163",
-                    "protocol": "http",
-                    "host": ["localhost"],
-                    "port": "8000",
-                    "path": ["api/operadoras", "1402285000150"]
-                }
-            },
-            "response": []
+	"info": {
+		"_postman_id": "ans-dashboard-full",
+		"name": "ANS Dashboard",
+		"description": "Coleção oficial da API do Teste Técnico ANS.\nContém exemplos de sucesso e cenários de erro para todas as rotas.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8000",
+			"type": "string"
         }
-    ]
+	],
+	"item": [
+		{
+			"name": "1. Operadoras",
+			"item": [
+				{
+					"name": "Listar Operadoras (Busca e Paginação)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/operadoras?page=1&limit=10&search=UNIMED",
+							"host": ["{{base_url}}"],
+							"path": ["api", "operadoras"],
+							"query": [
+								{ "key": "page", "value": "1", "description": "Página atual" },
+								{ "key": "limit", "value": "10", "description": "Registros por página" },
+								{ "key": "search", "value": "UNIMED", "description": "Filtro textual (Opcional)" }
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Sucesso: Lista Filtrada (200)",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/api/operadoras?search=UNIMED",
+									"host": ["{{base_url}}"],
+									"path": ["api", "operadoras"],
+									"query": [{ "key": "search", "value": "UNIMED" }]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [],
+							"body": "[\n    {\n        \"registro_ans\": \"354898\",\n        \"cnpj\": \"04439627000102\",\n        \"razao_social\": \"UNIMED SEGUROS SAÚDE S.A.\",\n        \"modalidade\": \"Seguradora Especializada em Saúde\",\n        \"uf\": \"SP\"\n    },\n    {\n        \"registro_ans\": \"312345\",\n        \"cnpj\": \"12345678000199\",\n        \"razao_social\": \"UNIMED BELO HORIZONTE\",\n        \"modalidade\": \"Cooperativa Médica\",\n        \"uf\": \"MG\"\n    }\n]"
+						},
+						{
+							"name": "Erro: Página Inválida (422)",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/api/operadoras?page=texto",
+									"host": ["{{base_url}}"],
+									"path": ["api", "operadoras"],
+									"query": [{ "key": "page", "value": "texto" }]
+								}
+							},
+							"status": "Unprocessable Entity",
+							"code": 422,
+							"_postman_previewlanguage": "json",
+							"header": [],
+							"body": "{\n    \"detail\": [\n        {\n            \"type\": \"int_parsing\",\n            \"loc\": [\"query\", \"page\"],\n            \"msg\": \"Input should be a valid integer, unable to parse string as an integer\",\n            \"input\": \"texto\"\n        }\n    ]\n}"
+						}
+					]
+				},
+				{
+					"name": "Detalhes da Operadora (Por ID)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/operadoras/354898",
+							"host": ["{{base_url}}"],
+							"path": ["api", "operadoras", "354898"],
+							"description": "Busca detalhes pelo Registro ANS (ID)"
+						}
+					},
+					"response": [
+						{
+							"name": "Sucesso: Detalhes Encontrados (200)",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/api/operadoras/354898",
+									"host": ["{{base_url}}"],
+									"path": ["api", "operadoras", "354898"]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [],
+							"body": "{\n    \"registro_ans\": \"354898\",\n    \"cnpj\": \"04439627000102\",\n    \"razao_social\": \"UNIMED SEGUROS SAÚDE S.A.\",\n    \"modalidade\": \"Seguradora Especializada em Saúde\",\n    \"logradouro\": \"ALAMEDA SANTOS\",\n    \"numero\": \"123\",\n    \"uf\": \"SP\",\n    \"cidade\": \"SÃO PAULO\"\n}"
+						},
+						{
+							"name": "Erro: Operadora Inexistente (404)",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/api/operadoras/000000",
+									"host": ["{{base_url}}"],
+									"path": ["api", "operadoras", "000000"]
+								}
+							},
+							"status": "Not Found",
+							"code": 404,
+							"_postman_previewlanguage": "json",
+							"header": [],
+							"body": "{\n    \"detail\": \"Operadora não encontrada\"\n}"
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "2. Despesas",
+			"item": [
+				{
+					"name": "Listar Despesas Consolidadas",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/despesas/consolidadas?ano=2024&uf=SP",
+							"host": ["{{base_url}}"],
+							"path": ["api", "despesas", "consolidadas"],
+							"query": [
+								{ "key": "ano", "value": "2024", "description": "Filtro por Ano" },
+								{ "key": "uf", "value": "SP", "description": "Filtro por Estado" }
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Sucesso: Dados Financeiros (200)",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/api/despesas/consolidadas?ano=2024",
+									"host": ["{{base_url}}"],
+									"path": ["api", "despesas", "consolidadas"],
+									"query": [{ "key": "ano", "value": "2024" }]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [],
+							"body": "[\n    {\n        \"id\": 1,\n        \"registro_ans\": \"354898\",\n        \"ano\": 2024,\n        \"trimestre\": 1,\n        \"valor_despesa\": 1500000.50,\n        \"data_atualizacao\": \"2024-04-15\"\n    },\n    {\n        \"id\": 2,\n        \"registro_ans\": \"354898\",\n        \"ano\": 2024,\n        \"trimestre\": 2,\n        \"valor_despesa\": 1650000.00,\n        \"data_atualizacao\": \"2024-07-15\"\n    }\n]"
+						},
+						{
+							"name": "Erro: Ano Inválido (422)",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/api/despesas/consolidadas?ano=abcd",
+									"host": ["{{base_url}}"],
+									"path": ["api", "despesas", "consolidadas"],
+									"query": [{ "key": "ano", "value": "abcd" }]
+								}
+							},
+							"status": "Unprocessable Entity",
+							"code": 422,
+							"_postman_previewlanguage": "json",
+							"header": [],
+							"body": "{\n    \"detail\": [\n        {\n            \"type\": \"int_parsing\",\n            \"loc\": [\"query\", \"ano\"],\n            \"msg\": \"Input should be a valid integer, unable to parse string as an integer\",\n            \"input\": \"abcd\"\n        }\n    ]\n}"
+						}
+					]
+				}
+			]
+		}
+	]
 }
