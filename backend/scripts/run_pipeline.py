@@ -54,8 +54,9 @@ def main():
         "processor.py",    # 2. Limpa e normaliza os dados
         "validator.py",    # 3. Verifica se o arquivo é válido
         "enricher.py",     # 4. Adiciona dados extras
-        "aggregator.py",   # 5. Cria resumos/agregados
-        "loader.py"        # 6. Salva no Banco de Dados
+        "etl_register.py", # 5. Prepara o cadastro
+        "aggregator.py",   # 6. Cria resumos/agregados
+        "loader.py"        # 7. Salva no Banco de Dados
     ]
 
     for script in steps:
