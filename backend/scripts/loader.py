@@ -8,10 +8,11 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 logger = logging.getLogger(__name__)
 
 DB_CONFIG = {
-    "host": "localhost",
-    "database": "ans_db",
-    "user": "postgres",
-    "password": "admin"
+"host": os.getenv("DB_HOST", "localhost"),
+    "database": os.getenv("DB_NAME", "ans_dashboard"),
+    "user": os.getenv("DB_USER", "postgres"),
+    "password": os.getenv("DB_PASSWORD", "password"),
+    "port": os.getenv("DB_PORT", "5432"),
 }
 
 def load_data():
