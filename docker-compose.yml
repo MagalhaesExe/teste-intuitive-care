@@ -1,0 +1,15 @@
+services:
+  db:
+    image: postgres:15
+    container_name: ans_postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: ans_dashboard
+    ports:
+      - "5433:5432"
+    volumes:
+      # Mapeia seus dados locais para dentro do container no caminho exato do SQL
+      - ./data:/data
+      # Mapeia os scripts SQL para uma pasta de entrada
+      - ./backend/database:/docker-entrypoint-initdb.d/scripts
