@@ -1,14 +1,21 @@
 import psycopg2
 from psycopg2.extras import RealDictCursor
 import os
+from dotenv import load_dotenv
 
-DB_CONFIG = {
-    "host": "localhost",
-    "database": "ans_db",
-    "user": "postgres",
-    "password": "admin"
-}
+load_dotenv()
 
 def get_db_connection():
-    conn = psycopg2.connect(**DB_CONFIG, cursor_factory=RealDictCursor)
-    return conn
+    try:
+        conn = psycopg2.connect(
+            host=os.getenv("DB_HOST", "localhost"),
+            database=os.getenv("DB_NAME", "ans_db"),
+            user=os.getenv("DB_USER", "postgres"),
+            password=os.getenv("DB_PASSWORD", "admin"), # Cuidado com senha padrão em produção
+            port=os.getenv("DB_PORT", "5432"),
+            cursor_factory=RealDictCursor
+        )
+        return conn
+    except Exception as e:
+        print(f"❌ Erro ao conectar ao banco de dados: {e}")
+        raise e
