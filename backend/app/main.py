@@ -4,10 +4,17 @@ from backend.app.routes import operators, statistics
 
 app = FastAPI(title="ANS Data API")
 
+origins = [
+    "http://localhost:8080",
+    "http://127.0.0.1:8080",
+    "*"
+]
+
 # Configuração de CORS para permitir que o Frontend (Vue) acesse o Backend
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=origins,
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
