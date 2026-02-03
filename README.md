@@ -136,7 +136,9 @@ O painel estará disponível em: `http://localhost:5173`
 
 ## Decisões Técnicas e Trade-offs
 
-Durante o desenvolvimento, algumas escolhas arquiteturais foram feitas visando escalabilidade, manutenibilidade e a performance da aplicação. Abaixo, detalho os principais trade-offs:
+Durante o desenvolvimento, algumas escolhas arquiteturais foram feitas visando escalabilidade, manutenibilidade e a performance da aplicação. 
+
+Abaixo, detalho os principais trade-offs:
 
 ### Processamento de Arquivos: Em Memória vs. Incremental
 **Decisão:** Processamento Incremental (Iterativo por arquivo).
