@@ -9,7 +9,34 @@ services:
     ports:
       - "5433:5432"
     volumes:
-      # Mapeia seus dados locais para dentro do container no caminho exato do SQL
       - ./data:/data
-      # Mapeia os scripts SQL para uma pasta de entrada
-      - ./backend/database:/docker-entrypoint-initdb.d/scripts
+      - ./backend/database:/docker-entrypoint-initdb.d
+
+  backend:
+    build: .  
+    container_name: ans_api
+    command: uvicorn backend.app.main:app --host 0.0.0.0 --port 8000 --reload
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app  
+    environment:
+      - DB_HOST=db
+      - DB_NAME=ans_dashboard
+      - DB_USER=postgres
+      - DB_PASSWORD=password
+    depends_on:
+      - db
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: ans_frontend_vue
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend
+    restart: always
+volumes:
+  pg_data:
