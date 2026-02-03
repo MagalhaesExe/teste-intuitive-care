@@ -260,7 +260,18 @@ Optou-se pelo comando `COPY` (PostgreSQL) em vez de `INSERT` linha a linha, devi
 
 ---
 
-### Análise de Dados
+### Análise de Dados e Queries SQL
+
+#### Localização do Arquivo
+As queries SQL completas encontram-se no arquivo:
+`backend/database/analysis/queries.sql`
+
+#### Como Executar as Queries
+Execute o comando abaixo na raiz do projeto para rodar o arquivo SQL diretamente no banco:
+```bash
+docker compose exec -T db psql -U postgres -d ans_dashboard < backend/database/analysis/queries.sql
+```
+
 **1. Operadoras com Maior Crescimento Percentual:**
 - **Estratégia Implementada:** CTEs (Common Table Expressions) para primeiro identificar, individualmente por operadora, qual era o seu trimestre inicial e final disponível. Em seguida, realizou-se a busca dos valores exatos nesses períodos e foi calculado a variação percentual.
 - **Tratamento de Dados Parciais:** Como nem todas as operadoras possuem dados em todos os trimestres (ex: operadoras que entraram ou saíram do mercado), a query não fixa "1º Tri de 2025", mas sim o mínimo e máximo período disponível para aquele CNPJ. Isso garante que o cálculo de crescimento seja justo e reflita a jornada real daquela operadora no banco de dados.
