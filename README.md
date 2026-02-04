@@ -29,7 +29,8 @@ Esta é a forma mais simples de rodar o projeto. Você não precisa instalar Pyt
 #### 1. Clone o repositório:
 ```bash
 git clone https://github.com/MagalhaesExe/teste-intuitive-care.git
-cd Teste_Alex_Magalhães
+
+cd Teste_Alex_Magalhaes
 ```
 
 #### 2. Suba os containers: 
@@ -60,17 +61,35 @@ docker compose exec backend python backend/scripts/run_pipeline.py
 #### 1. Clone o repositório:
 ```bash
 git clone https://github.com/MagalhaesExe/teste-intuitive-care.git
-cd Teste_Alex_Magalhães
 ```
 
-#### 2. Configurar o Banco de Dados (PostgreSQL)
+#### 2. Inicie o Banco de Dados
+- **Linux (Ubuntu/Debian):**
+```bash
+sudo systemctl start postgresql
+```
+
+- **macOS:**
+```bash
+brew services start postgresql
+```
+
+- **Windows:**
+Abra o menu Iniciar > "Serviços" > Procure por "PostgreSQL" > Clique em "Iniciar".
+
+#### 3. Abra o diretório:
+```bash
+cd Teste_Alex_Magalhaes
+```
+
+#### 3. Configurar o Banco de Dados (PostgreSQL)
 É recomendado subir apenas o banco via Docker para evitar instalar o Postgres localmente:
 
 ```bash
 docker compose up -d db
 ```
 
-#### 3. Configurando o Backend (Python)
+#### 4. Configurando o Backend (Python)
 1. Crie e ative um ambiente virtual:
 ```bash
 python -m venv venv
@@ -108,7 +127,7 @@ uvicorn backend.app.main:app --reload
 
 A API estará disponível em: `http://localhost:8000`
 
-#### 4. Configurar o frontend
+#### 5. Configurar o frontend
 
 1. Abra um **novo terminal**, volte para a raiz do projeto e entre na pasta frontend:
 ```bash
