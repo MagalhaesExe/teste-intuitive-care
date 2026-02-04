@@ -3,9 +3,15 @@ import psycopg2
 from psycopg2 import extras
 import os
 import logging
+from pathlib import Path
+from dotenv import load_dotenv
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
+
+current_dir = Path(__file__).resolve().parent
+env_path = current_dir.parent / '.env'
+load_dotenv(dotenv_path=env_path)
 
 DB_CONFIG = {
 "host": os.getenv("DB_HOST", "localhost"),
@@ -16,6 +22,7 @@ DB_CONFIG = {
 }
 
 def load_data():
+    conn = None
     try:
         conn = psycopg2.connect(**DB_CONFIG)
         cur = conn.cursor()
