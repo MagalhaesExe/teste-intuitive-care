@@ -54,7 +54,7 @@ docker compose exec backend python backend/scripts/run_pipeline.py
 
 **Pré-requisitos:**
 - Python 3.10+
-- Node.js 18+
+- Node.js 20.19+
 - PostgreSQL (Local ou via Docker)
 
 #### 1. Configurar o Banco de Dados (PostgreSQL)
