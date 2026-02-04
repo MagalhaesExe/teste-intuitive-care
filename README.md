@@ -57,17 +57,17 @@ docker compose exec backend python backend/scripts/run_pipeline.py
 - Node.js 20.19+
 - PostgreSQL (Local ou via Docker)
 
-#### 1. Configurar o Banco de Dados (PostgreSQL)
+#### 1. Clone o repositório:
+```bash
+git clone https://github.com/MagalhaesExe/teste-intuitive-care.git
+cd Teste_Alex_Magalhães
+```
+
+#### 2. Configurar o Banco de Dados (PostgreSQL)
 É recomendado subir apenas o banco via Docker para evitar instalar o Postgres localmente:
 
 ```bash
 docker compose up -d db
-```
-
-#### 2. Clone o repositório:
-```bash
-git clone https://github.com/MagalhaesExe/teste-intuitive-care.git
-cd Teste_Alex_Magalhães
 ```
 
 #### 3. Configurando o Backend (Python)
